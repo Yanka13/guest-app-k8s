@@ -1,0 +1,34 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-pv1-claim
+  labels:
+    type: local
+
+spec:
+  volumeName:  postgres-pv1
+  storageClassName: manual
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 1Gi
+
+
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name:  postgres-pv1
+  labels:
+    type: local
+
+spec:
+  capacity:
+    storage: 1Gi
+  volumeMode: Filesystem
+  storageClassName: manual
+  accessModes:
+    - ReadWriteMany
+  hostPath:
+    path: "/mnt/data"

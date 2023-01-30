@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  labels:
+    service: backend
+  name: backend
+
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      service: backend
+  strategy: {"RollingUpdate"}
+  template:
+    metadata:
+      labels:
+        service: backend
+    spec:
+      containers:
+      - name: backend
+        ports:
+        - containerPort: 5000
+        env:
+          - name: POSTGRES_DB
+            valueFrom:
+              secretKeyRef:
+                name: postgres-credentials
+                key: db
+          - name: POSTGRES_USER
+            valueFrom:
+              secretKeyRef:
+                name: postgres-credentials
+                key: user
+          - name: POSTGRES_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: postgres-credentials
+                key: password
+          - name: DATABASE_URL
+            value: postgresql://postgres:$(POSTGRES_PASSWORD)@$(POSTGRES_USER):5432/$(POSTGRES_DB)
+          - name: FLASK_ENV
+            value: development
+        image: 430771536635.dkr.ecr.eu-west-3.amazonaws.com/ksss:latest
+        imagePullPolicy: Always
+
+      restartPolicy: Always
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+      service: backend
+  name: backend
+spec:
+  type: LoadBalancer
+  ports:
+    - name: "5000"
+      port: 5000
+      targetPort: 5000
+  selector:
+    service: backend
+
